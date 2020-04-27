@@ -13,7 +13,7 @@ import { Refresh } from '@material-ui/icons';
 const ComputeResourcesTable = ({ computeResources, onDeleteComputeResource, onFetchComputeResourceJobStats, onFetchComputeResourceActive }) => {
 
     function sortByKey(array, key) {
-        return array.sort(function(a, b) {
+        return array.sort(function (a, b) {
             var x = a[key]; var y = b[key];
             return ((x < y) ? -1 : ((x > y) ? 1 : 0));
         });
@@ -46,21 +46,21 @@ const ComputeResourcesTable = ({ computeResources, onDeleteComputeResource, onFe
                     <span>{s.numRunning ? `${s.numRunning} running ` : ``}</span>
                     <span>{s.numFinished ? `${s.numFinished} finished ` : ``}</span>
                     <span>{s.numError ? `${s.numError} errored ` : ``}</span>
-                    <Button onClick={() => refresh()}>Refresh</Button>
+                    <Button onClick={() => refresh()}><Refresh /></Button>
                 </span>
             ) : <span>
                     <span>{`No jobs `}</span>
-                    <Button onClick={() => refresh()}>Refresh</Button>
+                    <Button onClick={() => refresh()}><Refresh /></Button>
                 </span>
         }
         else {
-            setTimeout(function() {
+            setTimeout(function () {
                 refresh();
             }, 0);
             ret = <span>Waiting for fetch...</span>;
         }
         return (
-            <span style={{minWidth: width, maxWidth: width, display: "block"}}>
+            <span style={{ minWidth: width, maxWidth: width, display: "block" }}>
                 {ret}
             </span>
         )
@@ -73,19 +73,19 @@ const ComputeResourcesTable = ({ computeResources, onDeleteComputeResource, onFe
             ret = <CircularProgress color="secondary" />;
         }
         else if (cr.active === true) {
-            ret = <span style={{color: "darkgreen"}}>Not-implemented</span>;
+            ret = <span style={{ color: "darkgreen" }}>Not-implemented</span>;
         }
         else if (cr.active === false) {
-            ret = <span style={{color: "darkred"}}>Not active</span>;
+            ret = <span style={{ color: "darkred" }}>Not active</span>;
         }
         else {
-            setTimeout(function() {
+            setTimeout(function () {
                 onFetchComputeResourceActive(cr.computeResourceName);
             }, 0);
             ret = <span>Waiting for fetch...</span>;
         }
         return (
-            <span style={{minWidth: width, maxWidth: width, display: "block"}}>
+            <span style={{ minWidth: width, maxWidth: width, display: "block" }}>
                 {ret}
             </span>
         )
@@ -97,8 +97,8 @@ const ComputeResourcesTable = ({ computeResources, onDeleteComputeResource, onFe
         computeResourceName: {
             element: <Link to={`/computeResource/${cr.computeResourceName}`}>{cr.computeResourceName}</Link>
         },
-        active: {element: getActiveElement(cr)},
-        jobs: {element: getJobsElement(cr)}
+        active: { element: getActiveElement(cr) },
+        jobs: { element: getJobsElement(cr) }
     }));
 
     const columns = [
@@ -161,6 +161,6 @@ const mapDispatchToProps = dispatch => ({
 })
 
 export default connect(
-  mapStateToProps,
-  mapDispatchToProps
+    mapStateToProps,
+    mapDispatchToProps
 )(ComputeResourcesTable)

@@ -7,6 +7,9 @@ export const INIT_FETCH_COMPUTE_RESOURCE_JOB_STATS = 'INIT_FETCH_COMPUTE_RESOURC
 export const RECEIVE_COMPUTE_RESOURCE_ACTIVE = 'RECEIVE_COMPUTE_RESOURCE_ACTIVE'
 export const INIT_FETCH_COMPUTE_RESOURCE_ACTIVE = 'INIT_FETCH_COMPUTE_RESOURCE_ACTIVE'
 
+export const INIT_FETCH_COMPUTE_RESOURCE_JOBS = 'INIT_FETCH_COMPUTE_RESOURCE_JOBS'
+export const RECEIVE_COMPUTE_RESOURCE_JOBS = 'RECEIVE_COMPUTE_RESOURCE_JOBS'
+
 const sleep = m => new Promise(r => setTimeout(r, m))
 
 export const addComputeResource = newComputeResource => ({
@@ -39,7 +42,7 @@ export const fetchComputeResourceJobStats = computeResourceName => {
       type: INIT_FETCH_COMPUTE_RESOURCE_JOB_STATS,
       computeResourceName: computeResourceName
     });
-    await sleep(500);
+    await sleep(50);
 
     const result = await axios.get(`/getComputeResourceJobStats?computeResourceId=${cr.computeResourceId}`);
     const jobStats = result.data;
@@ -49,41 +52,6 @@ export const fetchComputeResourceJobStats = computeResourceName => {
       computeResourceName: computeResourceName,
       jobStats: jobStats
     });
-
-    // if (!cr.mongoUri) {
-    //   // todo
-    //   return;
-    // }
-
-    // var MongoClient = require('mongodb').MongoClient;
-
-    // console.log('---', cr.mongoUri);
-    // let client;
-    // try {
-    //   client = await MongoClient.connect(cr.mongoUri, { useNewUrlParser: true });
-    //   const db = client.db(cr.databaseName);
-    //   const query = {
-    //     compute_resource_id: cr.computeResourceId
-    //   };
-    //   const result = await db.collection("hither2_jobs").find(query).toArray();
-    //   console.log(result);
-    //   dispatch({
-    //     type: RECEIVE_COMPUTE_RESOURCE_JOB_STATS,
-    //     computeResourceName: computeResourceName,
-    //     jobStats: {
-    //       numQueued: 1,
-    //       numRunning: 2,
-    //       numFinished: 3,
-    //       numError: 4
-    //     }
-    //   });
-    // }
-    // catch(err) {
-    //   console.error(err);
-    // }
-    // if (client) {
-    //   client.close();
-    // }
   }
 }
 
@@ -97,7 +65,7 @@ export const fetchComputeResourceActive = computeResourceName => {
       type: INIT_FETCH_COMPUTE_RESOURCE_ACTIVE,
       computeResourceName: computeResourceName
     });
-    await sleep(500);
+    await sleep(50);
     dispatch({
       type: RECEIVE_COMPUTE_RESOURCE_ACTIVE,
       computeResourceName: computeResourceName,
@@ -108,4 +76,28 @@ export const fetchComputeResourceActive = computeResourceName => {
 
 const findComputeResource = (state, computeResourceName) => {
   return state.computeResources.filter(r => (r.computeResourceName === computeResourceName))[0]
+}
+
+export const fetchComputeResourceJobs = (computeResourceName) => {
+  return async (dispatch, getState) => {
+    const state = getState();
+    let cr = findComputeResource(state, computeResourceName);
+    if (!cr) return;
+    const stateComputeResourceJobs = cr[computeResourceName] || {};
+    if (stateComputeResourceJobs.fetchingJobs) return;
+    dispatch({
+      type: INIT_FETCH_COMPUTE_RESOURCE_JOBS,
+      computeResourceName: computeResourceName
+    });
+    await sleep(50);
+
+    const result = await axios.get(`/getComputeResourceJobs?computeResourceId=${cr.computeResourceId}`);
+    const jobs = result.data.jobs;
+
+    dispatch({
+      type: RECEIVE_COMPUTE_RESOURCE_JOBS,
+      computeResourceName: computeResourceName,
+      jobs: jobs
+    });
+  }
 }
