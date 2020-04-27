@@ -1,17 +1,12 @@
-import React, { useState } from 'react'
+import React from 'react';
 import { connect } from 'react-redux'
-import { IconButton, TableHead, TableBody, TableRow, TableCell, Table } from '@material-ui/core'
-import EditableTable from '../components/EditableTable'
-import { deleteComputeResource } from '../actions';
-import AddComputeResource from './AddComputeResource';
-import { Add } from '@material-ui/icons';
-import { Link } from 'react-router-dom';
+import { TableHead, TableBody, TableRow, TableCell, Table } from '@material-ui/core'
 
 const ComputeResourceView = ({ computeResourceName, computeResources }) => {
-    const cr = computeResources.filter(cr => cr.computeResourceName == computeResourceName)[0] || {};
+    const cr = computeResources.filter(cr => cr.computeResourceName === computeResourceName)[0] || {};
 
     return (
-        <div>
+        <div className="ComputeResourceView">
             <h3>Compute resource: {cr.computeResourceName}</h3>
             <Table>
                 <TableHead />

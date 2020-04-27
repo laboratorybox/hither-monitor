@@ -1,8 +1,8 @@
 import React from 'react';
 import { Table, TableHead, TableBody, TableRow, TableCell, IconButton } from '@material-ui/core';
-import { Delete } from "@material-ui/icons"
+import { Delete, Edit } from "@material-ui/icons"
 
-const EditableTable = ({ rows, columns, onDeleteRow }) => {
+const EditableTable = ({ rows, columns, onDeleteRow, onEditRow }) => {
   return (
     <Table>
         <TableHead>
@@ -22,7 +22,17 @@ const EditableTable = ({ rows, columns, onDeleteRow }) => {
                 rows.map(row => (
                     <TableRow key={row.key}>
                         <TableCell>
-                            <IconButton onClick={() => onDeleteRow && onDeleteRow(row)}><Delete /></IconButton>
+                            {
+                                onDeleteRow ? (
+                                    <IconButton onClick={() => onDeleteRow && onDeleteRow(row)}><Delete /></IconButton>
+                                ) : (<span />)
+                            }
+                            {
+                                onEditRow ? (
+                                    <IconButton onClick={() => onEditRow && onEditRow(row)}><Edit /></IconButton>
+                                ) : (<span />)
+                            }
+                            
                         </TableCell>
                         {
                             columns.map(col => (
@@ -40,6 +50,7 @@ const EditableTable = ({ rows, columns, onDeleteRow }) => {
 };
 
 const makeCell = (x) => {
+    if (!x) return '';
     if (x.element) return x.element;
     else return x.text || '';
 }

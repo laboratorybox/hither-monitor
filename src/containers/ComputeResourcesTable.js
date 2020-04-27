@@ -1,44 +1,130 @@
 import React, { useState } from 'react'
 import { connect } from 'react-redux'
-import { IconButton } from '@material-ui/core'
 import EditableTable from '../components/EditableTable'
-import { deleteComputeResource } from '../actions';
+import { deleteComputeResource, fetchComputeResourceJobStats, fetchComputeResourceActive } from '../actions';
 import AddComputeResource from './AddComputeResource';
-import { Add } from '@material-ui/icons';
+import EditComputeResource from './EditComputeResource';
 import { Link } from 'react-router-dom';
+import Fab from '@material-ui/core/Fab';
+import AddIcon from '@material-ui/icons/Add';
+import { Button, CircularProgress } from '@material-ui/core';
+import { Refresh } from '@material-ui/icons';
 
-const ComputeResourcesTable = ({ computeResources, onDeleteComputeResource }) => {
+const ComputeResourcesTable = ({ computeResources, onDeleteComputeResource, onFetchComputeResourceJobStats, onFetchComputeResourceActive }) => {
+
+    function sortByKey(array, key) {
+        return array.sort(function(a, b) {
+            var x = a[key]; var y = b[key];
+            return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+        });
+    }
+
+    computeResources = sortByKey(computeResources, 'computeResourceName');
 
     const [mode, setMode] = useState('view');
+    const [currentComputeResource, setCurrentComputeResource] = useState(null);
+
+    const handleEditComputeResource = (computeResource) => {
+        setCurrentComputeResource(computeResource);
+        setMode('edit');
+    }
+
+    const getJobsElement = (cr) => {
+        const refresh = () => {
+            onFetchComputeResourceJobStats(cr.computeResourceName);
+        }
+        const width = 200;
+        let ret;
+        if (cr.fetchingJobStats) {
+            ret = <CircularProgress color="secondary" />;
+        }
+        else if (cr.jobStats) {
+            const s = cr.jobStats;
+            ret = s.numTotal ? (
+                <span>
+                    <span>{s.numQueued ? `${s.numQueued} queued ` : ``}</span>
+                    <span>{s.numRunning ? `${s.numRunning} running ` : ``}</span>
+                    <span>{s.numFinished ? `${s.numFinished} finished ` : ``}</span>
+                    <span>{s.numError ? `${s.numError} errored ` : ``}</span>
+                    <Button onClick={() => refresh()}>Refresh</Button>
+                </span>
+            ) : <span>
+                    <span>{`No jobs `}</span>
+                    <Button onClick={() => refresh()}>Refresh</Button>
+                </span>
+        }
+        else {
+            setTimeout(function() {
+                refresh();
+            }, 0);
+            ret = <span>Waiting for fetch...</span>;
+        }
+        return (
+            <span style={{minWidth: width, maxWidth: width, display: "block"}}>
+                {ret}
+            </span>
+        )
+    }
+
+    const getActiveElement = (cr) => {
+        const width = 60;
+        let ret;
+        if (cr.fetchingActive) {
+            ret = <CircularProgress color="secondary" />;
+        }
+        else if (cr.active === true) {
+            ret = <span style={{color: "darkgreen"}}>Not-implemented</span>;
+        }
+        else if (cr.active === false) {
+            ret = <span style={{color: "darkred"}}>Not active</span>;
+        }
+        else {
+            setTimeout(function() {
+                onFetchComputeResourceActive(cr.computeResourceName);
+            }, 0);
+            ret = <span>Waiting for fetch...</span>;
+        }
+        return (
+            <span style={{minWidth: width, maxWidth: width, display: "block"}}>
+                {ret}
+            </span>
+        )
+    }
 
     const rows = computeResources.map(cr => ({
+        computeResource: cr,
         key: cr.computeResourceName,
         computeResourceName: {
             element: <Link to={`/computeResource/${cr.computeResourceName}`}>{cr.computeResourceName}</Link>
         },
-        computeResourceId: {
-            text: cr.computeResourceId
-        }
+        active: {element: getActiveElement(cr)},
+        jobs: {element: getJobsElement(cr)}
     }));
+
     const columns = [
         {
             key: 'computeResourceName',
             label: 'Compute resource name'
         },
         {
-            key: 'computeResourceId',
-            label: 'Compute resource ID'
+            key: 'active',
+            label: 'Active'
+        },
+        {
+            key: 'jobs',
+            label: 'Jobs'
         }
     ]
 
     if (mode === 'view') {
         return (
             <div>
-                <IconButton onClick={() => setMode('add')}><Add /> Add new compute resource</IconButton>
+                <Fab color="primary" onClick={() => setMode('add')} title="Add compute resource"><AddIcon /></Fab>
                 <EditableTable
                     rows={rows}
                     columns={columns}
-                    onDeleteRow={(row) => onDeleteComputeResource(row.key)}
+                    onDeleteRow={(row) => onDeleteComputeResource(row.computeResource.computeResourceName)}
+                    onEditRow={(row) => handleEditComputeResource(row.computeResource)}
                 />
             </div>
         );
@@ -47,6 +133,15 @@ const ComputeResourcesTable = ({ computeResources, onDeleteComputeResource }) =>
         return (
             <AddComputeResource
                 onDone={() => setMode('view')}
+                existingComputeResourceNames={computeResources.map(cr => cr.computeResourceName)}
+            />
+        )
+    }
+    else if (mode === 'edit') {
+        return (
+            <EditComputeResource
+                onDone={() => setMode('view')}
+                computeResource={currentComputeResource}
             />
         )
     }
@@ -60,7 +155,9 @@ const mapStateToProps = state => ({
 })
 
 const mapDispatchToProps = dispatch => ({
-    onDeleteComputeResource: computeResourceName => dispatch(deleteComputeResource(computeResourceName))
+    onDeleteComputeResource: computeResourceName => dispatch(deleteComputeResource(computeResourceName)),
+    onFetchComputeResourceJobStats: computeResourceName => dispatch(fetchComputeResourceJobStats(computeResourceName)),
+    onFetchComputeResourceActive: computeResourceName => dispatch(fetchComputeResourceActive(computeResourceName))
 })
 
 export default connect(
