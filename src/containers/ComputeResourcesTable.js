@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { connect } from 'react-redux'
-import EditableTable from '../components/EditableTable'
+import NiceTable from '../components/NiceTable'
 import { deleteComputeResource, fetchComputeResourceJobStats, fetchComputeResourceActive } from '../actions';
 import AddComputeResource from './AddComputeResource';
 import EditComputeResource from './EditComputeResource';
@@ -40,18 +40,22 @@ const ComputeResourcesTable = ({ computeResources, onDeleteComputeResource, onFe
         }
         else if (cr.jobStats) {
             const s = cr.jobStats;
-            ret = s.numTotal ? (
-                <span>
-                    <span>{s.numQueued ? `${s.numQueued} queued ` : ``}</span>
-                    <span>{s.numRunning ? `${s.numRunning} running ` : ``}</span>
-                    <span>{s.numFinished ? `${s.numFinished} finished ` : ``}</span>
-                    <span>{s.numError ? `${s.numError} errored ` : ``}</span>
-                    <Button onClick={() => refresh()}><Refresh /></Button>
-                </span>
-            ) : <span>
-                    <span>{`No jobs `}</span>
-                    <Button onClick={() => refresh()}><Refresh /></Button>
-                </span>
+            if (s.error) {
+                ret = <Button onClick={() => refresh()}>{`Error `}<Refresh /></Button>
+            }
+            else {
+                ret = s.numTotal ? (
+                    <span>
+                        <span>{s.numQueued ? `${s.numQueued} queued ` : ``}</span>
+                        <span>{s.numRunning ? `${s.numRunning} running ` : ``}</span>
+                        <span>{s.numFinished ? `${s.numFinished} finished ` : ``}</span>
+                        <span>{s.numError ? `${s.numError} errored ` : ``}</span>
+                        <Button onClick={() => refresh()}><Refresh /></Button>
+                    </span>
+                ) : <span>
+                        <Button onClick={() => refresh()}>{`No jobs `}<Refresh /></Button>
+                    </span>
+            }
         }
         else {
             setTimeout(function () {
@@ -95,7 +99,7 @@ const ComputeResourcesTable = ({ computeResources, onDeleteComputeResource, onFe
         computeResource: cr,
         key: cr.computeResourceName,
         computeResourceName: {
-            element: <Link to={`/computeResource/${cr.computeResourceName}`}>{cr.computeResourceName}</Link>
+            element: <Link title={"View this compute resource"} to={`/computeResource/${cr.computeResourceName}`}>{cr.computeResourceName}</Link>
         },
         active: { element: getActiveElement(cr) },
         jobs: { element: getJobsElement(cr) }
@@ -119,13 +123,17 @@ const ComputeResourcesTable = ({ computeResources, onDeleteComputeResource, onFe
     if (mode === 'view') {
         return (
             <div>
-                <Fab color="primary" onClick={() => setMode('add')} title="Add compute resource"><AddIcon /></Fab>
-                <EditableTable
+                <NiceTable
                     rows={rows}
                     columns={columns}
+                    deleteRowLabel={"Delete this compute resource"}
                     onDeleteRow={(row) => onDeleteComputeResource(row.computeResource.computeResourceName)}
+                    editRowLabel={"Edit this compute resource"}
                     onEditRow={(row) => handleEditComputeResource(row.computeResource)}
                 />
+                <div style={{padding: 20}}>
+                    <Fab color="primary" onClick={() => setMode('add')} title="Add compute resource"><AddIcon /></Fab>
+                </div>
             </div>
         );
     }

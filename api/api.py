@@ -1,17 +1,20 @@
-import time
-import json
 from flask import Flask, request
-import os
 import hither2 as hi
+import urllib
 
 app = Flask(__name__)
+
+def decodeURIComponent(x):
+    return urllib.parse.unquote(x)
 
 @app.route('/getComputeResourceJobStats')
 def getComputeResourceJobStats():
     computeResourceId = request.args.get('computeResourceId')
+    mongoUri = decodeURIComponent(request.args.get('mongoUri'))
+    databaseName = request.args.get('databaseName')
     database = hi.Database(
-        mongo_url=os.environ['LABBOX_EPHYS_MONGO_URI'],
-        database='labbox'
+        mongo_url=mongoUri,
+        database=databaseName
     )
     db = database.collection('hither2_jobs')
     query = dict(
@@ -19,7 +22,6 @@ def getComputeResourceJobStats():
     )
     docs = [doc for doc in db.find(query)]
 
-    print(computeResourceId, len(docs))
     return dict(
         numTotal=len(docs),
         numQueued=len([doc for doc in docs if doc['status'] == 'queued']),
@@ -31,10 +33,11 @@ def getComputeResourceJobStats():
 @app.route('/getComputeResourceJobs')
 def getComputeResourceJobs():
     computeResourceId = request.args.get('computeResourceId')
-    print('jobs', computeResourceId)
+    mongoUri = decodeURIComponent(request.args.get('mongoUri'))
+    databaseName = request.args.get('databaseName')
     database = hi.Database(
-        mongo_url=os.environ['LABBOX_EPHYS_MONGO_URI'],
-        database='labbox'
+        mongo_url=mongoUri,
+        database=databaseName
     )
     db = database.collection('hither2_jobs')
     query = dict(
@@ -53,7 +56,6 @@ def getComputeResourceJobs():
         doc for doc in db.find(query, projection)
     ]
 
-    print(computeResourceId, len(jobs))
     return dict(
         jobs=jobs
     )

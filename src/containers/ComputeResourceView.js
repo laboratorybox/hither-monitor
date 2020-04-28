@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import { Fab, CircularProgress } from '@material-ui/core'
 import { fetchComputeResourceJobs } from '../actions';
 import { Refresh } from '@material-ui/icons';
-import EditableTable from '../components/EditableTable';
+import NiceTable from '../components/NiceTable';
 
 const JobsView = ({ jobs }) => {
     function sortByKeys(array, keys) {
@@ -50,7 +50,7 @@ const JobsView = ({ jobs }) => {
 
     const rowsSorted = sortByKeys(rows, ['status', 'function', 'label'])
     return (
-        <EditableTable
+        <NiceTable
             rows={rowsSorted}
             columns={columns}
         />
@@ -68,9 +68,16 @@ const ComputeResourceView = ({ computeResourceName, jobs, onFetchComputeResource
     if (state0.fetchingJobs) {
         content = <div style={{padding: 50}}><CircularProgress /></div>
     }
+    else if (state0.error) {
+        content = <div style={{padding: 10}}>Error fetching jobs.</div>
+    }
     else if (state0.jobs) {
         console.log(state0.jobs);
-        content = <JobsView jobs={state0.jobs} />;
+        content = (
+            <div style={{padding: 10}}>
+                <JobsView jobs={state0.jobs} />
+            </div>
+        );
     }
     else {
         content = <span>Waiting</span>;
@@ -81,8 +88,8 @@ const ComputeResourceView = ({ computeResourceName, jobs, onFetchComputeResource
 
     return (
         <div className="ComputeResourceView">
-            <h3>Compute resource: {computeResourceName}</h3>
-            <div><Fab onClick={() => refresh()}><Refresh /></Fab></div>
+            <h1>Compute resource: {computeResourceName}</h1>
+            <div title="Refresh jobs" style={{padding: 30}}><Fab color="secondary" onClick={() => refresh()}><Refresh /></Fab></div>
             {content}
         </div>
     );

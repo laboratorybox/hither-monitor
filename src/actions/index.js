@@ -44,14 +44,26 @@ export const fetchComputeResourceJobStats = computeResourceName => {
     });
     await sleep(50);
 
-    const result = await axios.get(`/getComputeResourceJobStats?computeResourceId=${cr.computeResourceId}`);
-    const jobStats = result.data;
+    const url = `/getComputeResourceJobStats?computeResourceId=${cr.computeResourceId}&mongoUri=${encodeURIComponent(cr.mongoUri)}&databaseName=${cr.databaseName}`;
+    console.log(url);
+    try {
+      const result = await axios.get(url);
+      const jobStats = result.data;
 
-    dispatch({
-      type: RECEIVE_COMPUTE_RESOURCE_JOB_STATS,
-      computeResourceName: computeResourceName,
-      jobStats: jobStats
-    });
+      dispatch({
+        type: RECEIVE_COMPUTE_RESOURCE_JOB_STATS,
+        computeResourceName: computeResourceName,
+        jobStats: jobStats
+      });
+    }
+    catch(err) {
+      console.error(err);
+      dispatch({
+        type: RECEIVE_COMPUTE_RESOURCE_JOB_STATS,
+        computeResourceName: computeResourceName,
+        jobStats: {error: true}
+      });
+    }
   }
 }
 
@@ -91,13 +103,25 @@ export const fetchComputeResourceJobs = (computeResourceName) => {
     });
     await sleep(50);
 
-    const result = await axios.get(`/getComputeResourceJobs?computeResourceId=${cr.computeResourceId}`);
-    const jobs = result.data.jobs;
+    const url = `/getComputeResourceJobs?computeResourceId=${cr.computeResourceId}&mongoUri=${encodeURIComponent(cr.mongoUri)}&databaseName=${cr.databaseName}`;
+    try {
+      const result = await axios.get(url);
+      const jobs = result.data.jobs;
 
-    dispatch({
-      type: RECEIVE_COMPUTE_RESOURCE_JOBS,
-      computeResourceName: computeResourceName,
-      jobs: jobs
-    });
+      dispatch({
+        type: RECEIVE_COMPUTE_RESOURCE_JOBS,
+        computeResourceName: computeResourceName,
+        jobs: jobs,
+        error: false
+      });
+    }
+    catch(err) {
+      dispatch({
+        type: RECEIVE_COMPUTE_RESOURCE_JOBS,
+        computeResourceName: computeResourceName,
+        jobs: [],
+        error: true
+      });
+    }
   }
 }

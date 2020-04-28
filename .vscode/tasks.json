@@ -5,6 +5,11 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "yarn install",
+            "type": "shell",
+            "command": "bash -ic .vscode/tasks/yarn_install.sh"
+        },
+        {
             "label": "yarn start",
             "type": "shell",
             "command": "bash -ic .vscode/tasks/yarn_start.sh"

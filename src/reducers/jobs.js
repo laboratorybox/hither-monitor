@@ -12,9 +12,9 @@ const jobs = (state = {}, action) => {
 const computeResourceJobs = (state, action) => {
     switch (action.type) {
         case INIT_FETCH_COMPUTE_RESOURCE_JOBS:
-            return {...state, fetchingJobs: true}
+            return {...state, fetchingJobs: true, jobs: [], error: false}
         case RECEIVE_COMPUTE_RESOURCE_JOBS:
-            return {...state, fetchingJobs: false, jobs: action.jobs}
+            return {...state, fetchingJobs: false, jobs: action.jobs, error: action.error}
         default:
             return state
     }
